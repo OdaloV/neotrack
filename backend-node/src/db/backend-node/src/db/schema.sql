@@ -370,3 +370,14 @@ COMMENT ON TABLE neonates IS 'Main table for newborn admissions';
 COMMENT ON TABLE vital_signs IS 'Continuous monitoring with AI risk assessment';
 COMMENT ON TABLE alerts IS 'AI-generated alerts for high-risk neonates';
 COMMENT ON COLUMN vital_signs.risk_score IS '0.00 to 1.00 - Higher score = higher deterioration risk';
+
+-- Add password_hash column to users table
+ALTER TABLE users 
+ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT 'temp_hash';
+
+-- Remove the default after adding (so new users must provide password)
+ALTER TABLE users 
+ALTER COLUMN password_hash DROP DEFAULT;
+
+-- Create index for faster login lookups
+CREATE INDEX idx_users_email ON users(email);
