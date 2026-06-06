@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { query } = require('../db/postgres');
 const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
 
 // POST /auth/login
 router.post('/login', async (req, res) => {
