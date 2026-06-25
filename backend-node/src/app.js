@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const { query } = require('./db/postgres');
 const authRoutes = require('./routes/auth');
+const neonateRoutes = require('./routes/neonates'); 
 const { verifyToken, requireRole } = require('./middleware/auth');
 
 dotenv.config();
