@@ -16,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Auth routes (public)
 app.use('/auth', authRoutes);
+app.use('/', neonateRoutes);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
