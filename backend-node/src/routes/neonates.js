@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../db/postgres');
 const { verifyToken, requireRole } = require('../middleware/auth');
+const { validateNeonateAdmission, validateDischarge, validateFacilityId } = require('../middleware/validation');
 
 // POST /neonates - Admit a new neonate
 router.post('/neonates', 
     verifyToken, 
     requireRole('NURSE'),
+    validateNeonateAdmission,
     async (req, res) => {
         try {
             const {
@@ -30,90 +32,6 @@ router.post('/neonates',
                 respiratory_rate_at_admission,
                 spo2_at_admission
             } = req.body;
-
-            if (!mother_id || !facility_id || !birth_weight || !gestational_age) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Missing required fields: mother_id, facility_id, birth_weight, gestational_age'
-                });
-            }
-
-            if (birth_weight < 0.5 || birth_weight > 6.0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'birth_weight must be between 0.5 and 6.0 kg'
-                });
-            }
-
-            if (gestational_age < 22 || gestational_age > 44) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'gestational_age must be between 22 and 44 weeks'
-                });
-            }
-
-            if (sex && !['MALE', 'FEMALE', 'UNKNOWN'].includes(sex)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'sex must be MALE, FEMALE, or UNKNOWN'
-                });
-            }
-
-            if (delivery_type && !['SVD', 'C-SECTION', 'ASSISTED', 'BREECH'].includes(delivery_type)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'delivery_type must be SVD, C-SECTION, ASSISTED, or BREECH'
-                });
-            }
-
-            if (apgar_score_1min !== undefined && (apgar_score_1min < 0 || apgar_score_1min > 10)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'apgar_score_1min must be between 0 and 10'
-                });
-            }
-
-            if (apgar_score_5min !== undefined && (apgar_score_5min < 0 || apgar_score_5min > 10)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'apgar_score_5min must be between 0 and 10'
-                });
-            }
-
-            if (apgar_score_10min !== undefined && (apgar_score_10min < 0 || apgar_score_10min > 10)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'apgar_score_10min must be between 0 and 10'
-                });
-            }
-
-            if (temperature_at_admission !== undefined && (temperature_at_admission < 32 || temperature_at_admission > 42)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'temperature_at_admission must be between 32.0 and 42.0 °C'
-                });
-            }
-
-            if (heart_rate_at_admission !== undefined && (heart_rate_at_admission < 60 || heart_rate_at_admission > 220)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'heart_rate_at_admission must be between 60 and 220 bpm'
-                });
-            }
-
-            if (respiratory_rate_at_admission !== undefined && (respiratory_rate_at_admission < 20 || respiratory_rate_at_admission > 100)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'respiratory_rate_at_admission must be between 20 and 100 breaths/min'
-                });
-            }
-
-            if (spo2_at_admission !== undefined && (spo2_at_admission < 60 || spo2_at_admission > 100)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'spo2_at_admission must be between 60 and 100%'
-                });
-            }
 
             const motherCheck = await query(
                 'SELECT id FROM mothers WHERE id = $1',
@@ -273,17 +191,11 @@ router.post('/neonates',
 // GET /neonates - Get active neonates for a facility
 router.get('/neonates',
     verifyToken,
+    validateFacilityId,
     async (req, res) => {
         try {
             const { facility_id, page = 1, limit = 20 } = req.query;
             const offset = (page - 1) * limit;
-
-            if (!facility_id) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'facility_id is required'
-                });
-            }
 
             if (req.user.role !== 'ADMIN') {
                 if (req.user.facility_id !== facility_id) {
@@ -414,6 +326,7 @@ router.get('/neonates',
         }
     }
 );
+
 // GET /neonates/:id - Get single neonate with latest vitals
 router.get('/neonates/:id',
     verifyToken,
@@ -421,7 +334,6 @@ router.get('/neonates/:id',
         try {
             const { id } = req.params;
 
-            // Get neonate with mother and facility info
             const result = await query(
                 `SELECT 
                     n.id,
@@ -476,7 +388,6 @@ router.get('/neonates/:id',
 
             const neonate = result.rows[0];
 
-            // Check facility access
             if (req.user.role !== 'ADMIN') {
                 if (req.user.facility_id !== neonate.facility_id) {
                     return res.status(403).json({
@@ -486,7 +397,6 @@ router.get('/neonates/:id',
                 }
             }
 
-            // Get latest vitals
             const vitalsResult = await query(
                 `SELECT 
                     id, temperature, heart_rate, respiratory_rate, spo2,
@@ -503,7 +413,6 @@ router.get('/neonates/:id',
                 [id]
             );
 
-            // Get vitals history (last 20)
             const historyResult = await query(
                 `SELECT 
                     id, temperature, heart_rate, respiratory_rate, spo2,
@@ -515,7 +424,6 @@ router.get('/neonates/:id',
                 [id]
             );
 
-            // Get recent alerts
             const alertsResult = await query(
                 `SELECT 
                     id, alert_type, risk_score, risk_level, reasons,
@@ -638,10 +546,12 @@ router.get('/neonates/:id',
         }
     }
 );
+
 // PATCH /neonates/:id/discharge - Set outcome and discharge
 router.patch('/neonates/:id/discharge',
     verifyToken,
     requireRole('CLINICIAN'),
+    validateDischarge,
     async (req, res) => {
         try {
             const { id } = req.params;
@@ -652,16 +562,6 @@ router.patch('/neonates/:id/discharge',
                 referral_id 
             } = req.body;
 
-            // Validate outcome
-            const validOutcomes = ['DISCHARGED_HEALTHY', 'REFERRED', 'DIED', 'AMA', 'TRANSFERRED'];
-            if (!outcome || !validOutcomes.includes(outcome)) {
-                return res.status(400).json({
-                    success: false,
-                    message: `outcome must be one of: ${validOutcomes.join(', ')}`
-                });
-            }
-
-            // Check if neonate exists and is active
             const neonateCheck = await query(
                 `SELECT id, facility_id, is_active, admission_datetime 
                  FROM neonates 
@@ -685,7 +585,6 @@ router.patch('/neonates/:id/discharge',
                 });
             }
 
-            // Check facility access
             if (req.user.role !== 'ADMIN') {
                 if (req.user.facility_id !== neonate.facility_id) {
                     return res.status(403).json({
@@ -695,7 +594,6 @@ router.patch('/neonates/:id/discharge',
                 }
             }
 
-            // If outcome is REFERRED or TRANSFERRED, validate referral_id
             if (['REFERRED', 'TRANSFERRED'].includes(outcome)) {
                 if (!referral_id) {
                     return res.status(400).json({
@@ -725,7 +623,6 @@ router.patch('/neonates/:id/discharge',
                 if (client) {
                     await client.query('BEGIN');
 
-                    // Update neonate
                     result = await client.query(
                         `UPDATE neonates 
                          SET outcome = $1, 
@@ -738,7 +635,6 @@ router.patch('/neonates/:id/discharge',
                         [outcome, outcome_notes || null, dischargeTime, id]
                     );
 
-                    // If referral, update referral status
                     if (['REFERRED', 'TRANSFERRED'].includes(outcome) && referral_id) {
                         await client.query(
                             `UPDATE referrals 
