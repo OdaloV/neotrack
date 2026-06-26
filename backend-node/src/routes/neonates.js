@@ -3,6 +3,7 @@ const router = express.Router();
 const { query } = require('../db/postgres');
 const { verifyToken, requireRole } = require('../middleware/auth');
 
+// POST /neonates - Admit a new neonate
 router.post('/neonates', 
     verifyToken, 
     requireRole('NURSE'),
@@ -263,6 +264,151 @@ router.post('/neonates',
             res.status(500).json({
                 success: false,
                 message: 'Internal server error while admitting neonate',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
+);
+
+// GET /neonates - Get active neonates for a facility
+router.get('/neonates',
+    verifyToken,
+    async (req, res) => {
+        try {
+            const { facility_id, page = 1, limit = 20 } = req.query;
+            const offset = (page - 1) * limit;
+
+            if (!facility_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'facility_id is required'
+                });
+            }
+
+            if (req.user.role !== 'ADMIN') {
+                if (req.user.facility_id !== facility_id) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'You can only view neonates from your facility'
+                    });
+                }
+            }
+
+            const facilityCheck = await query(
+                'SELECT id FROM facilities WHERE id = $1',
+                [facility_id]
+            );
+            if (facilityCheck.rows.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Facility not found'
+                });
+            }
+
+            const countResult = await query(
+                `SELECT COUNT(*) as total 
+                 FROM neonates 
+                 WHERE facility_id = $1 AND is_active = true`,
+                [facility_id]
+            );
+            const total = parseInt(countResult.rows[0].total);
+
+            const result = await query(
+                `SELECT 
+                    n.id,
+                    n.admission_number,
+                    n.birth_weight,
+                    n.gestational_age,
+                    n.sex,
+                    n.apgar_score_1min,
+                    n.apgar_score_5min,
+                    n.apgar_score_10min,
+                    n.delivery_type,
+                    n.admission_datetime,
+                    n.is_active,
+                    n.created_at,
+                    m.id as mother_id,
+                    m.first_name as mother_first_name,
+                    m.last_name as mother_last_name,
+                    m.mch_number,
+                    m.phone as mother_phone,
+                    vs.temperature as latest_temperature,
+                    vs.heart_rate as latest_heart_rate,
+                    vs.respiratory_rate as latest_respiratory_rate,
+                    vs.spo2 as latest_spo2,
+                    vs.risk_score as latest_risk_score,
+                    vs.risk_level as latest_risk_level,
+                    vs.recorded_at as latest_vitals_time
+                FROM neonates n
+                JOIN mothers m ON n.mother_id = m.id
+                LEFT JOIN LATERAL (
+                    SELECT * FROM vital_signs 
+                    WHERE neonate_id = n.id 
+                    ORDER BY recorded_at DESC 
+                    LIMIT 1
+                ) vs ON true
+                WHERE n.facility_id = $1 AND n.is_active = true
+                ORDER BY n.admission_datetime DESC
+                LIMIT $2 OFFSET $3`,
+                [facility_id, parseInt(limit), parseInt(offset)]
+            );
+
+            const neonates = result.rows.map(neonate => {
+                const daysAdmitted = Math.floor(
+                    (new Date() - new Date(neonate.admission_datetime)) / (1000 * 60 * 60 * 24)
+                );
+
+                return {
+                    id: neonate.id,
+                    admission_number: neonate.admission_number,
+                    birth_weight: parseFloat(neonate.birth_weight),
+                    gestational_age: neonate.gestational_age,
+                    sex: neonate.sex,
+                    apgar_score_1min: neonate.apgar_score_1min,
+                    apgar_score_5min: neonate.apgar_score_5min,
+                    apgar_score_10min: neonate.apgar_score_10min,
+                    delivery_type: neonate.delivery_type,
+                    admission_datetime: neonate.admission_datetime,
+                    days_admitted: daysAdmitted,
+                    mother: {
+                        id: neonate.mother_id,
+                        first_name: neonate.mother_first_name,
+                        last_name: neonate.mother_last_name,
+                        mch_number: neonate.mch_number,
+                        phone: neonate.mother_phone
+                    },
+                    latest_vitals: neonate.latest_temperature ? {
+                        temperature: parseFloat(neonate.latest_temperature),
+                        heart_rate: neonate.latest_heart_rate,
+                        respiratory_rate: neonate.latest_respiratory_rate,
+                        spo2: neonate.latest_spo2,
+                        risk_score: parseFloat(neonate.latest_risk_score),
+                        risk_level: neonate.latest_risk_level,
+                        recorded_at: neonate.latest_vitals_time
+                    } : null
+                };
+            });
+
+            const pages = Math.ceil(total / parseInt(limit));
+
+            res.json({
+                success: true,
+                data: {
+                    neonates,
+                    pagination: {
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        total: total,
+                        pages: pages
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error fetching neonates:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error while fetching neonates',
                 error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
