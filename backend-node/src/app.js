@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const { query } = require('./db/postgres');
 const authRoutes = require('./routes/auth');
+const neonateRoutes = require('./routes/neonates'); 
 const { verifyToken, requireRole } = require('./middleware/auth');
 
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Auth routes (public)
 app.use('/auth', authRoutes);
+app.use('/', neonateRoutes);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
