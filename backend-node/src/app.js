@@ -1,3 +1,6 @@
+const vitalsRoutes = require('./routes/vitals');
+
+
 const express = require('express');
 const dotenv = require('dotenv');
 const { query } = require('./db/postgres');
@@ -78,6 +81,7 @@ app.get('/', (req, res) => {
         }
     });
 });
+app.use('/', vitalsRoutes);
 
 // Start server
 if (require.main === module) {
