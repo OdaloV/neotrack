@@ -1,0 +1,114 @@
+{
+  "auc_roc_test": 0.9955,
+  "auc_roc_cv_mean": 0.995,
+  "f1_score": 0.9173,
+  "threshold": 0.3304,
+  "sklearn_p50_ms": 1.385,
+  "pass_auc_target": true,
+  "n_train": 4000,
+  "n_test": 1000,
+  "features": [
+    "temperature",
+    "heart_rate",
+    "respiratory_rate",
+    "spo2",
+    "birth_weight",
+    "gestational_age",
+    "age_hours",
+    "seizure",
+    "apnea",
+    "bradycardia",
+    "cyanosis",
+    "poor_tone",
+    "bulging_fontanelle",
+    "jaundice",
+    "abdominal_distension"
+  ],
+  "feature_importances": [
+    {
+      "feature": "spo2",
+      "importance": 0.210163
+    },
+    {
+      "feature": "apnea",
+      "importance": 0.172925
+    },
+    {
+      "feature": "heart_rate",
+      "importance": 0.127855
+    },
+    {
+      "feature": "seizure",
+      "importance": 0.113232
+    },
+    {
+      "feature": "temperature",
+      "importance": 0.110482
+    },
+    {
+      "feature": "respiratory_rate",
+      "importance": 0.104722
+    },
+    {
+      "feature": "cyanosis",
+      "importance": 0.083625
+    },
+    {
+      "feature": "birth_weight",
+      "importance": 0.025228
+    },
+    {
+      "feature": "bradycardia",
+      "importance": 0.019848
+    },
+    {
+      "feature": "gestational_age",
+      "importance": 0.01752
+    },
+    {
+      "feature": "age_hours",
+      "importance": 0.010811
+    },
+    {
+      "feature": "poor_tone",
+      "importance": 0.002306
+    },
+    {
+      "feature": "jaundice",
+      "importance": 0.001128
+    },
+    {
+      "feature": "abdominal_distension",
+      "importance": 0.000104
+    },
+    {
+      "feature": "bulging_fontanelle",
+      "importance": 5.1e-05
+    }
+  ],
+  "model_params": {
+    "ccp_alpha": 0.0,
+    "criterion": "deprecated",
+    "init": null,
+    "learning_rate": 0.08,
+    "loss": "log_loss",
+    "max_depth": 4,
+    "max_features": "sqrt",
+    "max_leaf_nodes": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 20,
+    "min_samples_split": 2,
+    "min_weight_fraction_leaf": 0.0,
+    "n_estimators": 300,
+    "n_iter_no_change": null,
+    "random_state": 42,
+    "subsample": 0.85,
+    "tol": 0.0001,
+    "validation_fraction": 0.1,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "onnx_p50_ms": 0.021,
+  "onnx_p95_ms": 0.032,
+  "pass_latency_target": true
+}
