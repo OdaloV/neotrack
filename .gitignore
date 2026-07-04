@@ -2,3 +2,12 @@
 .env
 backend-node/.env
 .env
+ml-model/training/model.pkl
+backend-go/libonnxruntime.so.1.20.1
+backend-go/model.onnx
+backend-go/nicu-model
+backend-go/*.tgz
+backend-go/onnxruntime-linux-x64-*/
+backend-go/onnxruntime.so
+venv/
+ml-model/training/model.pkl
