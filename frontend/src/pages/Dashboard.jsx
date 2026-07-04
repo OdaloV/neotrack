@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import "../styles/global.css";
 
@@ -20,9 +19,11 @@ function riskSort(a, b) {
 }
 
 async function apiFetch(url) {
+  const token = localStorage.getItem("token");
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
+      "Authorization": token ? `Bearer ${token}` : "",
     },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
@@ -84,6 +85,16 @@ function formatSavedAt(ts) {
   return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function getRiskEmoji(level) {
+  const emojis = {
+    CRITICAL: "🚨",
+    HIGH: "⚠️",
+    MEDIUM: "📊",
+    LOW: "✅",
+  };
+  return emojis[level] || "❓";
+}
+
 export default function Dashboard() {
   const [neonates,      setNeonates]      = useState([]);
   const [alertCount,    setAlertCount]    = useState(0);
@@ -92,6 +103,7 @@ export default function Dashboard() {
   const [isOffline,     setIsOffline]     = useState(!navigator.onLine);
   const [lastRefresh,   setLastRefresh]   = useState(null);
   const [cacheTime,     setCacheTime]     = useState(null);
+  const [stats,         setStats]         = useState({ critical: 0, high: 0, medium: 0, low: 0 });
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -105,13 +117,23 @@ export default function Dashboard() {
     };
   }, []);
 
+  const calculateStats = useCallback((data) => {
+    const critical = data.filter(n => n.risk_level?.toUpperCase() === "CRITICAL").length;
+    const high = data.filter(n => n.risk_level?.toUpperCase() === "HIGH").length;
+    const medium = data.filter(n => n.risk_level?.toUpperCase() === "MEDIUM").length;
+    const low = data.filter(n => n.risk_level?.toUpperCase() === "LOW").length;
+    return { critical, high, medium, low };
+  }, []);
+
   const loadData = useCallback(async () => {
     setError(null);
 
     if (!navigator.onLine) {
       const cached = await cacheRead();
       if (cached) {
-        setNeonates([...cached.data].sort(riskSort));
+        const sorted = [...cached.data].sort(riskSort);
+        setNeonates(sorted);
+        setStats(calculateStats(sorted));
         setCacheTime(cached.savedAt);
       } else {
         setError("You are offline and no cached data is available.");
@@ -128,6 +150,7 @@ export default function Dashboard() {
 
       const sorted = [...rows].sort(riskSort);
       setNeonates(sorted);
+      setStats(calculateStats(sorted));
       setAlertCount(alertData?.count ?? 0);
       setLastRefresh(Date.now());
       setCacheTime(null);
@@ -136,7 +159,9 @@ export default function Dashboard() {
       console.error("[Dashboard] fetch error:", err);
       const cached = await cacheRead();
       if (cached) {
-        setNeonates([...cached.data].sort(riskSort));
+        const sorted = [...cached.data].sort(riskSort);
+        setNeonates(sorted);
+        setStats(calculateStats(sorted));
         setCacheTime(cached.savedAt);
         setError("Live data unavailable — showing cached snapshot.");
       } else {
@@ -145,7 +170,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [calculateStats]);
 
   useEffect(() => {
     loadData();
@@ -153,37 +178,36 @@ export default function Dashboard() {
     return () => clearInterval(timerRef.current);
   }, [loadData]);
 
-  const criticalCount = neonates.filter(
-    (n) => n.risk_level?.toUpperCase() === "CRITICAL"
-  ).length;
+  const criticalCount = stats.critical;
 
   return (
     <div className="page">
       <header className="header">
         <div className="header-left">
-          <h1 className="page-title">Active Neonates</h1>
+          <h1 className="page-title">🏥 Active Neonates</h1>
           {lastRefresh && !isOffline && (
             <span className="text-muted">
               Updated {formatTime(new Date(lastRefresh).toISOString())}
             </span>
           )}
-          {isOffline && <span className="pill-offline">● Offline</span>}
+          {isOffline && <span className="pill-offline">● Offline Mode</span>}
           {cacheTime && (
             <span className="pill-cache">
-              Cached snapshot · {formatSavedAt(cacheTime)}
+              📦 Cached · {formatSavedAt(cacheTime)}
             </span>
           )}
         </div>
 
         <div className="header-right">
           {criticalCount > 0 && (
-            <div className="pill-critical">⚠ {criticalCount} Critical</div>
+            <div className="pill-critical">🚨 {criticalCount} Critical</div>
           )}
 
           <button
             className="btn-icon"
-            onClick={() => {}}
+            onClick={() => window.location.href = "/alerts"}
             aria-label={`${alertCount} pending alerts`}
+            title="View pending alerts"
           >
             🔔
             {alertCount > 0 && (
@@ -193,30 +217,64 @@ export default function Dashboard() {
             )}
           </button>
 
-          <button className="btn-refresh" onClick={loadData} title="Refresh now">
-            ↺
+          <button 
+            className="btn-refresh" 
+            onClick={loadData} 
+            title="Refresh now"
+            disabled={loading}
+          >
+            {loading ? "⏳" : "↺"}
           </button>
         </div>
       </header>
 
-      {error && <div className="error-banner">{error}</div>}
+      {/* Stats Summary */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-critical">{stats.critical}</div>
+          <div className="stat-label">🚨 Critical</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-high">{stats.high}</div>
+          <div className="stat-label">⚠️ High</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-medium">{stats.medium}</div>
+          <div className="stat-label">📊 Medium</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-low">{stats.low}</div>
+          <div className="stat-label">✅ Low</div>
+        </div>
+      </div>
+
+      {error && <div className="error-banner fade-in">⚠️ {error}</div>}
 
       {loading ? (
-        <div className="loading">Loading patients…</div>
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <p>Loading patients…</p>
+        </div>
       ) : neonates.length === 0 ? (
-        <div className="empty">No active neonates found.</div>
+        <div className="empty">
+          <p style={{ fontSize: "48px", marginBottom: "16px" }}>👶</p>
+          <p>No active neonates found.</p>
+          <p className="text-muted" style={{ marginTop: "8px" }}>
+            New admissions will appear here.
+          </p>
+        </div>
       ) : (
         <div className="table-wrapper">
           <table className="table">
             <thead>
               <tr>
                 <th>Risk</th>
-                <th>ID / Name</th>
-                <th>Age (days)</th>
-                <th>Ward / Bed</th>
+                <th>Patient</th>
+                <th className="text-center">Age</th>
+                <th>Location</th>
                 <th>Diagnosis</th>
                 <th>Last Assessment</th>
-                <th>Assigned Nurse</th>
+                <th>Nurse</th>
               </tr>
             </thead>
             <tbody>
@@ -227,7 +285,12 @@ export default function Dashboard() {
                 const rowClass = isCritical ? "tr-critical" : isHigh ? "tr-high" : "";
 
                 return (
-                  <tr key={n.id ?? n.neonate_id} className={rowClass}>
+                  <tr 
+                    key={n.id ?? n.neonate_id} 
+                    className={rowClass}
+                    onClick={() => window.location.href = `/neonates/${n.id}`}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>
                       <RiskBadge level={level} />
                     </td>
@@ -237,10 +300,10 @@ export default function Dashboard() {
                     </td>
                     <td className="text-center">{n.age_days ?? "—"}</td>
                     <td>
-                      {n.ward ?? "—"}
+                      {n.ward ?? "NICU"}
                       {n.bed_number && <span className="subtext"> · Bed {n.bed_number}</span>}
                     </td>
-                    <td>{n.diagnosis ?? "—"}</td>
+                    <td>{n.diagnosis ?? "Under observation"}</td>
                     <td>
                       <span
                         className={isCritical || isHigh ? "text-critical" : "text-muted"}
@@ -255,6 +318,17 @@ export default function Dashboard() {
               })}
             </tbody>
           </table>
+          <div style={{ 
+            padding: "12px 16px", 
+            borderTop: "1px solid #1e293b",
+            color: "#64748b",
+            fontSize: "12px",
+            display: "flex",
+            justifyContent: "space-between"
+          }}>
+            <span>Showing {neonates.length} active patients</span>
+            <span>Auto-refresh every 60s</span>
+          </div>
         </div>
       )}
     </div>
@@ -271,11 +345,11 @@ function RiskBadge({ level }) {
 
   const label = RISK_LABEL[level] ?? level ?? "Unknown";
   const isCritical = level === "CRITICAL";
+  const emoji = getRiskEmoji(level);
 
   return (
     <span className={badgeClass}>
-      {isCritical && "⚠ "}
-      {label}
+      {emoji} {label}
     </span>
   );
 }
