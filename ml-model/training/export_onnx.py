@@ -36,7 +36,7 @@ def export_onnx(pipeline, n_features: int) -> None:
     onnx_model = convert_sklearn(
         pipeline,
         initial_types=initial_type,
-        target_opset=17,
+        target_opset=13,
         options={type(pipeline.named_steps["clf"]): {"zipmap": False}},
     )
     ONNX_PATH.write_bytes(onnx_model.SerializeToString())
@@ -83,7 +83,7 @@ def validate_parity(pipeline, features: list, threshold: float) -> None:
     max_diff = float(np.abs(sk_probs - onnx_prob).max())
     matches  = int((sk_preds == onnx_pred).sum())
 
-    print(f"\n── Parity check (20 random samples) ────────────────")
+    print(f"\n Parity check (20 random samples) ")
     print(f"  Max probability diff (sk vs onnx): {max_diff:.6f}")
     print(f"  Prediction agreement: {matches}/20")
 
@@ -124,7 +124,7 @@ def benchmark_onnx(features: list, threshold: float, n: int = 500) -> float:
     p95 = float(np.percentile(times, 95))
     p99 = float(np.percentile(times, 99))
 
-    print(f"\n── ONNX inference benchmark ({n} runs) ─────────────")
+    print(f"\n  ONNX inference benchmark ({n} runs)")
     print(f"  p50: {p50:.3f} ms")
     print(f"  p95: {p95:.3f} ms")
     print(f"  p99: {p99:.3f} ms")
@@ -146,9 +146,7 @@ def update_metrics(onnx_p50, onnx_p95):
 
 
 def main():
-    print("=" * 54)
     print("  NICUTrack — Export Pipeline → ONNX")
-    print("=" * 54)
 
     bundle    = load_model()
     pipeline  = bundle["pipeline"]
@@ -163,11 +161,8 @@ def main():
     p50, p95 = benchmark_onnx(features, threshold)
     update_metrics(p50, p95)
 
-    print("\n" + "=" * 54)
-    print("  model.onnx ready — commit to repo")
-    print("  Use inference.py (below) to call from Node.js / Python")
-    print("=" * 54)
-
+    print("\n")
+    print("  model.onnx ready ")
 
 if __name__ == "__main__":
     main()

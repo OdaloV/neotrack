@@ -108,7 +108,7 @@
     "verbose": 0,
     "warm_start": false
   },
-  "onnx_p50_ms": 0.021,
-  "onnx_p95_ms": 0.032,
+  "onnx_p50_ms": 0.07,
+  "onnx_p95_ms": 0.099,
   "pass_latency_target": true
 }
