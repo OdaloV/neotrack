@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NICUTrack — Offline</title>
+  <style>
+    body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .card { text-align: center; padding: 40px; max-width: 360px; }
+    h1 { font-size: 20px; margin-bottom: 8px; color: #f1f5f9; }
+    p { font-size: 14px; color: #64748b; line-height: 1.6; }
+    .icon { font-size: 48px; margin-bottom: 16px; }
+    button { margin-top: 24px; background: #38bdf8; color: #0f172a; border: none; border-radius: 8px; padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">📡</div>
+    <h1>You are offline</h1>
+    <p>NICUTrack is not reachable right now. Any vitals you record will be saved locally and synced automatically when you reconnect.</p>
+    <button onclick="location.reload()">Try again</button>
+  </div>
+</body>
+</html>
