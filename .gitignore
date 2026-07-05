@@ -15,3 +15,5 @@ backend-go/onnxruntime*.tgz
 backend-go/onnxruntime-linux*/
 backend-go/libonnxruntime*
 backend-go/nicu-model
+backend-node/node_modules/
+backend-node/package-lock.json
