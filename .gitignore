@@ -11,3 +11,7 @@ backend-go/onnxruntime-linux-x64-*/
 backend-go/onnxruntime.so
 venv/
 ml-model/training/model.pkl
+backend-go/onnxruntime*.tgz
+backend-go/onnxruntime-linux*/
+backend-go/libonnxruntime*
+backend-go/nicu-model

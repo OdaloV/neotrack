@@ -51,7 +51,7 @@ func Load(modelPath string) error {
 		session, err = ort.NewAdvancedSession(
 			modelPath,
 			[]string{"float_input"},
-			[]string{"output_probability"},
+			[]string{"probabilities"},
 			[]ort.Value{inputTensor},
 			[]ort.Value{outputTensor},
 			opts,
