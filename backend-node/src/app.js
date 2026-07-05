@@ -12,6 +12,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const syncRoute  = require("./routes/sync");
+const { startSyncWorker } = require("./services/syncService");
 
 // Middleware
 app.use(express.json());
@@ -82,6 +84,9 @@ app.get('/', (req, res) => {
     });
 });
 app.use('/', vitalsRoutes);
+
+app.use("/api/sync", syncRoute);
+startSyncWorker(60_000);
 
 // Start server
 if (require.main === module) {
