@@ -142,3 +142,75 @@ button{cursor:pointer;font:inherit}
 .offline-banner-btn{background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font-size:12px;padding:3px 10px;cursor:pointer;opacity:.8}
 .offline-banner-btn:hover{opacity:1}
 .offline-banner-synced{font-size:12px;opacity:.7}
+.alerts-page{padding:24px;min-height:100vh}
+.alerts-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.alerts-title{font-size:22px;font-weight:700;color:#f1f5f9;display:flex;align-items:center;gap:10px}
+.alerts-badge{background:#ef4444;color:#fff;font-size:12px;font-weight:700;border-radius:9999px;padding:2px 8px;min-width:20px;text-align:center}
+.alerts-subtitle{font-size:13px;color:#64748b;margin-top:4px}
+.alerts-refresh-btn{background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:14px;padding:6px 14px;cursor:pointer;transition:all .15s ease}
+.alerts-refresh-btn:hover{color:#e2e8f0;border-color:#94a3b8}
+.alerts-error{background:#450a0a;border:1px solid #b91c1c;border-radius:8px;color:#fca5a5;padding:10px 16px;margin-bottom:16px;font-size:14px}
+.alerts-loading,.alerts-empty{text-align:center;color:#64748b;margin-top:80px;font-size:15px}
+.alerts-list{display:flex;flex-direction:column;gap:12px}
+
+.alert-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;transition:all .15s ease}
+.alert-card-critical{background:#2d0a0a;border-color:#ef4444;animation:pulse 2s ease-in-out infinite}
+.alert-card-immediate{border-left:4px solid #ef4444}
+.alert-card-resolved{opacity:.55;border-color:#1e293b}
+.alert-card-escalated{border-color:#f59e0b;background:#1c1108}
+
+.alert-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.alert-card-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.alert-time{font-size:12px;color:#64748b}
+
+.alert-urgency-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em}
+.alert-urgency-IMMEDIATE{background:#7f1d1d;color:#fef2f2;border:1px solid #ef4444}
+.alert-urgency-URGENT{background:#78350f;color:#fef3c7;border:1px solid #f59e0b}
+.alert-urgency-ROUTINE{background:#1e293b;color:#94a3b8;border:1px solid #334155}
+
+.alert-status-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.alert-status-PENDING{background:#1e293b;color:#38bdf8;border:1px solid #38bdf8}
+.alert-status-ACKNOWLEDGED{background:#0f1f12;color:#4ade80;border:1px solid #4ade80}
+.alert-status-ESCALATED{background:#1c1108;color:#f59e0b;border:1px solid #f59e0b}
+.alert-status-RESOLVED{background:#1e293b;color:#64748b;border:1px solid #334155}
+
+.alert-card-body{display:flex;flex-direction:column;gap:10px}
+.alert-patient{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.alert-patient-name{font-size:13px;color:#94a3b8}
+.alert-facility{font-size:12px;color:#64748b;margin-left:auto}
+.alert-risk-row{display:flex;align-items:center;gap:10px}
+.alert-risk-level{font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.alert-risk-CRITICAL{background:#7f1d1d;color:#fef2f2;border:1px solid #ef4444}
+.alert-risk-HIGH{background:#991b1b;color:#fee2e2;border:1px solid #f87171}
+.alert-risk-MEDIUM{background:#78350f;color:#fef3c7;border:1px solid #f59e0b}
+.alert-risk-LOW{background:#14532d;color:#dcfce7;border:1px solid #4ade80}
+.alert-risk-score{font-size:12px;color:#64748b}
+.alert-reasons{padding-left:16px;font-size:13px;color:#94a3b8;display:flex;flex-direction:column;gap:2px}
+.alert-recommendation{font-size:13px;color:#94a3b8;background:rgba(0,0,0,.2);border-radius:8px;padding:10px 12px}
+.alert-escalation-info{font-size:13px;color:#f59e0b;background:rgba(245,158,11,.08);border-radius:8px;padding:8px 12px}
+
+.alert-card-footer{margin-top:14px;border-top:1px solid #1e293b;padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.alert-notes{width:100%;background:#263348;border:1px solid #334155;border-radius:8px;color:#e2e8f0;padding:8px 12px;font-size:13px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s ease}
+.alert-notes:focus{border-color:#38bdf8}
+.alert-notes::placeholder{color:#64748b}
+.alert-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.alert-btn{border:none;border-radius:8px;font-size:13px;font-weight:600;padding:7px 16px;cursor:pointer;transition:opacity .15s ease}
+.alert-btn:disabled{opacity:.4;cursor:not-allowed}
+.alert-btn-ack{background:#14532d;color:#dcfce7;border:1px solid #4ade80}
+.alert-btn-ack:hover:not(:disabled){opacity:.85}
+.alert-btn-esc{background:#78350f;color:#fef3c7;border:1px solid #f59e0b}
+.alert-btn-esc:hover:not(:disabled){opacity:.85}
+.alert-btn-res{background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.alert-btn-res:hover:not(:disabled){color:#e2e8f0;border-color:#94a3b8}
+.alert-btn-cancel{background:none;color:#64748b;border:1px solid #334155}
+.alert-btn-cancel:hover{color:#e2e8f0;border-color:#94a3b8}
+.alert-resolved-stamp{font-size:12px;color:#4ade80;margin-top:10px;padding-top:10px;border-top:1px solid #1e293b}
+
+.alert-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
+.alert-modal{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;width:100%;max-width:440px}
+.alert-modal-title{font-size:18px;font-weight:700;color:#f1f5f9;margin-bottom:6px}
+.alert-modal-subtitle{font-size:13px;color:#64748b;margin-bottom:16px}
+.alert-modal-textarea{width:100%;background:#263348;border:1px solid #334155;border-radius:8px;color:#e2e8f0;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s ease;margin-bottom:16px}
+.alert-modal-textarea:focus{border-color:#f59e0b}
+.alert-modal-actions{display:flex;gap:8px}
