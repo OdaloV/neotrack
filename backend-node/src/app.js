@@ -14,6 +14,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const syncRoute  = require("./routes/sync");
 const { startSyncWorker } = require("./services/syncService");
+const alertsRoutes = require("./routes/alerts");
+
 
 // Middleware
 app.use(express.json());
@@ -96,5 +98,6 @@ if (require.main === module) {
         console.log(`Login: POST http://localhost:${PORT}/auth/login`);
     });
 }
+app.use("/api/alerts", alertsRoutes);
 
 module.exports = app;
